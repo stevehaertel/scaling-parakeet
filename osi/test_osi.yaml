@@ -20,8 +20,8 @@ semantic_model:
         - "catalog sales with inventory shortage"
 
     datasets:
-      - name: catalog_sales_supply_risk_base
-        source: dph_curated.catalog_sales_supply_risk_base
+      - name: CATALOG_SALES_SUPPLY_RISK_BASE
+        source: DPH_CURATED.CATALOG_SALES_SUPPLY_RISK_BASE
         description: >
           Curated analytical dataset at catalog sales line grain,
           enriched with inventory, shipment, warehouse, item,
@@ -208,64 +208,13 @@ semantic_model:
               synonyms: ["inventory on hand", "stock on hand"]
 
     metrics:
-      - name: affected_sales_count
-        description: Count of sales lines in current scope
+      - name: catalog_sales_supply_risk_analysis
+        description: Analyze catalog sales with inventory shortage, delays, promo split, and customer segment
         expression:
           dialects:
             - dialect: ANSI_SQL
-              expression: COUNT(*)
         ai_context:
-          synonyms: ["total count", "transaction count", "affected sales"]
-
-      - name: promo_sales_count
-        description: Count of sales lines with a promotion
-        expression:
-          dialects:
-            - dialect: ANSI_SQL
-              expression: SUM(CASE WHEN promo_flag = 1 THEN 1 ELSE 0 END)
-        ai_context:
-          synonyms: ["promo count", "promoted sales"]
-
-      - name: no_promo_sales_count
-        description: Count of sales lines without a promotion
-        expression:
-          dialects:
-            - dialect: ANSI_SQL
-              expression: SUM(CASE WHEN promo_flag = 0 THEN 1 ELSE 0 END)
-        ai_context:
-          synonyms: ["non promo count", "non-promoted sales"]
-
-      - name: shortage_sales_count
-        description: Count of sales lines with inventory shortage
-        expression:
-          dialects:
-            - dialect: ANSI_SQL
-              expression: SUM(CASE WHEN shortage_flag = 1 THEN 1 ELSE 0 END)
-
-      - name: delayed_sales_count
-        description: Count of sales lines with shipping delay above threshold
-        expression:
-          dialects:
-            - dialect: ANSI_SQL
-              expression: SUM(CASE WHEN ship_delay_days > 5 THEN 1 ELSE 0 END)
-
-      - name: promo_share
-        description: Share of scoped sales lines with promotion
-        expression:
-          dialects:
-            - dialect: ANSI_SQL
-              expression: 1.0 * SUM(CASE WHEN promo_flag = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0)
-
-      - name: avg_ship_delay_days
-        description: Average shipping delay in days
-        expression:
-          dialects:
-            - dialect: ANSI_SQL
-              expression: AVG(ship_delay_days)
-
-      - name: avg_shortage_gap_units
-        description: Average quantity gap for shortage rows
-        expression:
-          dialects:
-            - dialect: ANSI_SQL
-              expression: AVG(CASE WHEN shortage_flag = 1 THEN quantity_sold - quantity_on_hand END)
+          synonyms: ["shortage analysis", "inventory analysis", "sales analysis"]
+        custom_extensions:
+          - vendor_name: IBM_DATA_PRODUCT_HUB
+            data: '{ "type": "parameterized_query", "id": "019d8827-f470-75eb-a717-07884a98aecb" }'
