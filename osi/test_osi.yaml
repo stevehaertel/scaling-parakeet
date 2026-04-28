@@ -1,0 +1,271 @@
+version: "0.1.1"
+
+semantic_model:
+  - name: catalog_sales_supply_risk_model
+    description: >
+      Certified semantic model for analyzing catalog sales affected by
+      inventory shortages, shipping delays, promotion participation,
+      and customer demographic segments.
+
+    ai_context:
+      instructions: >
+        Use this model for catalog sales supply-risk analysis.
+        Prefer the curated base dataset over reconstructing joins across
+        raw benchmark tables.
+      synonyms:
+        - "catalog sales shortage analysis"
+        - "catalog sales delay analysis"
+        - "promo split under shortage"
+        - "customer segment supply risk"
+        - "catalog sales with inventory shortage"
+
+    datasets:
+      - name: catalog_sales_supply_risk_base
+        source: dph_curated.catalog_sales_supply_risk_base
+        description: >
+          Curated analytical dataset at catalog sales line grain,
+          enriched with inventory, shipment, warehouse, item,
+          promotion, and customer segment context.
+
+        primary_key: [sale_line_id]
+        unique_keys:
+          - [sale_line_id]
+
+        ai_context:
+          synonyms:
+            - "catalog supply risk base"
+            - "catalog sales risk view"
+            - "certified shortage and delay dataset"
+
+        fields:
+          - name: sale_line_id
+            description: Unique identifier of enriched catalog sales line
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: sale_line_id
+            dimension:
+              is_time: false
+
+          - name: sold_date
+            description: Date when the item was sold
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: sold_date
+            dimension:
+              is_time: true
+            ai_context:
+              synonyms: ["sale date", "order date", "sold date"]
+
+          - name: sold_week_seq
+            description: Week sequence of sold date
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: sold_week_seq
+            dimension:
+              is_time: true
+            ai_context:
+              synonyms: ["sale week", "sales week", "week"]
+
+          - name: sold_year
+            description: Year of sold date
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: sold_year
+            dimension:
+              is_time: true
+            ai_context:
+              synonyms: ["year", "sales year"]
+
+          - name: inventory_date
+            description: Inventory snapshot date
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: inventory_date
+            dimension:
+              is_time: true
+
+          - name: ship_date
+            description: Date when order was shipped
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: ship_date
+            dimension:
+              is_time: true
+            ai_context:
+              synonyms: ["shipment date", "shipping date"]
+
+          - name: item_desc
+            description: Item description
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: item_desc
+            dimension:
+              is_time: false
+            ai_context:
+              synonyms: ["item", "product", "sku", "item description"]
+
+          - name: warehouse_name
+            description: Warehouse name
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: warehouse_name
+            dimension:
+              is_time: false
+            ai_context:
+              synonyms: ["warehouse", "distribution center", "DC"]
+
+          - name: marital_status
+            description: Customer marital status
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: marital_status
+            dimension:
+              is_time: false
+            ai_context:
+              synonyms: ["customer marital status"]
+
+          - name: buy_potential
+            description: Household buy potential segment
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: buy_potential
+            dimension:
+              is_time: false
+            ai_context:
+              synonyms:
+                - "buy potential"
+                - "customer segment"
+                - "household segment"
+
+          - name: promo_flag
+            description: 1 when a promotion was used, else 0
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: promo_flag
+            dimension:
+              is_time: false
+            ai_context:
+              synonyms:
+                - "promotion flag"
+                - "promo participation"
+                - "promo applied"
+
+          - name: shortage_flag
+            description: 1 when on-hand inventory is below quantity sold
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: shortage_flag
+            dimension:
+              is_time: false
+            ai_context:
+              synonyms:
+                - "inventory shortage"
+                - "stock shortage"
+                - "shortage"
+
+          - name: ship_delay_days
+            description: Days between sold date and ship date
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: ship_delay_days
+            dimension:
+              is_time: false
+            ai_context:
+              synonyms:
+                - "delay days"
+                - "shipping delay"
+                - "fulfillment delay"
+
+          - name: quantity_sold
+            description: Quantity sold on the sales line
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: quantity_sold
+            ai_context:
+              synonyms: ["units sold", "sales quantity"]
+
+          - name: quantity_on_hand
+            description: Inventory quantity available on aligned inventory week
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: quantity_on_hand
+            ai_context:
+              synonyms: ["inventory on hand", "stock on hand"]
+
+    metrics:
+      - name: affected_sales_count
+        description: Count of sales lines in current scope
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: COUNT(*)
+        ai_context:
+          synonyms: ["total count", "transaction count", "affected sales"]
+
+      - name: promo_sales_count
+        description: Count of sales lines with a promotion
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: SUM(CASE WHEN promo_flag = 1 THEN 1 ELSE 0 END)
+        ai_context:
+          synonyms: ["promo count", "promoted sales"]
+
+      - name: no_promo_sales_count
+        description: Count of sales lines without a promotion
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: SUM(CASE WHEN promo_flag = 0 THEN 1 ELSE 0 END)
+        ai_context:
+          synonyms: ["non promo count", "non-promoted sales"]
+
+      - name: shortage_sales_count
+        description: Count of sales lines with inventory shortage
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: SUM(CASE WHEN shortage_flag = 1 THEN 1 ELSE 0 END)
+
+      - name: delayed_sales_count
+        description: Count of sales lines with shipping delay above threshold
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: SUM(CASE WHEN ship_delay_days > 5 THEN 1 ELSE 0 END)
+
+      - name: promo_share
+        description: Share of scoped sales lines with promotion
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: 1.0 * SUM(CASE WHEN promo_flag = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0)
+
+      - name: avg_ship_delay_days
+        description: Average shipping delay in days
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: AVG(ship_delay_days)
+
+      - name: avg_shortage_gap_units
+        description: Average quantity gap for shortage rows
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: AVG(CASE WHEN shortage_flag = 1 THEN quantity_sold - quantity_on_hand END)
